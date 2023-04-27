@@ -10,6 +10,8 @@ let binCode = "0x608060405234801561001057600080fd5b506107d8806100206000396000f3f
 
 contract = new web3.eth.Contract(abiCode);
 
+let val = new Array(100000).fill("a").join("");
+
 web3.eth.getAccounts().then((accounts) => {
     // Display all Ganache Accounts
     console.log("Accounts:", accounts);
@@ -20,7 +22,7 @@ web3.eth.getAccounts().then((accounts) => {
     console.log("Default Account:", mainAccount);
     contract
         .deploy({ data: binCode })
-        .send({ from: mainAccount, gas: 4700000 })
+        .send({ from: mainAccount, gas: 800000000 })
         .on("receipt", (receipt) => {
 
             // Contract Address will be returned here
@@ -28,7 +30,7 @@ web3.eth.getAccounts().then((accounts) => {
         })
         .then(async (initialContract) => {
             console.log(initialContract.options.address);
-            await initialContract.methods.test_db_create("hello", "world").send({from: mainAccount});
+            await initialContract.methods.test_db_create("hello", val).send({from: mainAccount});
             let res = await initialContract.methods.test_db_query("hello").call();
             console.log(res);
         });
