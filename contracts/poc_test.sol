@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract Test {
-    function db_create(string memory key, string memory value) public returns (uint256) {
+contract PocTest {
+    function dbCreate(string memory key, string memory value) public pure returns (uint256) {
         uint256 keyOffset;
         uint256 keyLen;
         uint256 valOffset;
@@ -20,7 +20,7 @@ contract Test {
         return res;
     }
 
-    function db_query(string memory key) public returns (string memory) {
+    function dbQuery(string memory key) public pure returns (string memory) {
         uint256 keyOffset;
         uint256 keyLen;
         uint256 resOffset;
@@ -38,7 +38,7 @@ contract Test {
         return getStringFromMemory(resOffset, resLength);
     }
 
-    function db_delete(string memory key) public returns (uint256) {
+    function dbDelete(string memory key) public pure returns (uint256) {
         uint256 keyOffset;
         uint256 keyLen;
         uint256 res;
@@ -52,7 +52,7 @@ contract Test {
         return res;
     }
 
-    function db_update(string memory key, string memory value) public returns (uint256) {
+    function dbUpdate(string memory key, string memory value) public pure returns (uint256) {
         uint256 keyOffset;
         uint256 keyLen;
         uint256 valOffset;
@@ -84,16 +84,16 @@ contract Test {
     }
 
 
-    function test_db_create(string memory key, string memory value) public returns (uint256) {
-        return db_create(key, value);
+    function test_db_create(string memory key, string memory value) public pure returns (uint256) {
+        return dbCreate(key, value);
     }
-    function test_db_query(string memory key) public returns (string memory) {
-        return db_query(key);
+    function test_db_query(string memory key) public pure returns (string memory) {
+        return dbQuery(key);
     }
-    function test_db_delete(string memory key) public returns (uint256) {
-        return db_delete(key);
+    function test_db_delete(string memory key) public pure returns (uint256) {
+        return dbDelete(key);
     }
-    function test_db_update(string memory key, string memory value) public returns (uint256) {
-        return db_update(key, value);
+    function test_db_update(string memory key, string memory value) public pure returns (uint256) {
+        return dbUpdate(key, value);
     }
 }
