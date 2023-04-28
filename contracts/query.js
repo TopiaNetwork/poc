@@ -14,34 +14,15 @@ contract_2 = new web3_2.eth.Contract(abiCode);
 
 let val = new Array(100000).fill("a").join("");
 
-(async () => {
-    let account_1 = (await web3_1.eth.getAccounts())[0]
-    let account_2 = (await web3_2.eth.getAccounts())[0]
+(async (chain, key) => {
+    let account = chain === 1
+        ? (await web3_1.eth.getAccounts())[0]
+        : (await web3_2.eth.getAccounts())[0]
 
-    await contract_1.deploy({ data: binCode }).send({ from: account_1, gas: 800000000 })
-    await contract_2.deploy({ data: binCode }).send({ from: account_2, gas: 800000000 })
-})()
+    let contract = chain === 1
+        ? contract_1
+        : contract_2
 
-// web3_1.eth.getAccounts().then((accounts) => {
-//     // Display all Ganache Accounts
-//     console.log("Accounts:", accounts);
-//
-//     let mainAccount = accounts[0];
-//
-//     // address that will deploy smart contract
-//     console.log("Default Account:", mainAccount);
-//     contract_1
-//         .deploy({ data: binCode })
-//         .send({ from: mainAccount, gas: 800000000 })
-//         .on("receipt", (receipt) => {
-//
-//             // Contract Address will be returned here
-//             console.log("Contract Address:", receipt.contractAddress);
-//         })
-//         .then(async (initialContract) => {
-//             console.log(initialContract.options.address);
-//             await initialContract.methods.test_db_create("hello", val).send({from: mainAccount});
-//             let res = await initialContract.methods.test_db_query("hello").call();
-//             console.log(res);
-//         });
-// });
+    let res = await contract.methods.test_db_query(key).call();
+    console.log(res);
+})(1, "hello", val)
