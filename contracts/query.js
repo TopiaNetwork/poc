@@ -38,4 +38,4 @@ let val = new Array(100000).fill("a").join("");
 
     let res = await contract.methods.test_db_query(key).call();
     console.log(res);
-})(1, "hello", val)
+})(1, "myKey")

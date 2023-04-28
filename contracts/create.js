@@ -38,4 +38,4 @@ let val = new Array(100000).fill("a").join("");
         : contract_2
 
     await contract.methods.test_db_create(key, value).send({from: account})
-})(1, "hello", val)
+})(1, "myKey", val)
