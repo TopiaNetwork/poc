@@ -2,7 +2,10 @@
 pragma solidity ^0.8.0;
 
 contract PocTest {
-    function dbCreate(string memory key, string memory value) public pure returns (uint256) {
+    function dbCreate(
+        uint256 chainId, address contractAddr,
+        string memory key, string memory value) public pure returns (uint256) {
+
         uint256 keyOffset;
         uint256 keyLen;
         uint256 valOffset;
@@ -14,13 +17,15 @@ contract PocTest {
             keyLen := mload(key)
             valOffset := add(value, 0x20)
             valLen := mload(value)
-            res := dbput(keyOffset, keyLen, valOffset, valLen)
+            res := dbput(chainId, contractAddr, keyOffset, keyLen, valOffset, valLen)
         }
 
         return res;
     }
 
-    function dbQuery(string memory key) public pure returns (string memory) {
+    function dbQuery(uint256 chainId, address contractAddr,
+        string memory key) public pure returns (string memory) {
+
         uint256 keyOffset;
         uint256 keyLen;
         uint256 resOffset;
@@ -31,14 +36,17 @@ contract PocTest {
             keyOffset := add(key, 0x20)
             keyLen := mload(key)
             memOffset := mload(0x40)
-            resOffset, resLength := dbquery(memOffset, keyOffset, keyLen)
+            resOffset, resLength := dbquery(chainId, contractAddr, memOffset, keyOffset, keyLen)
             mstore(0x40, add(memOffset, resLength))
         }
 
         return getStringFromMemory(resOffset, resLength);
     }
 
-    function dbDelete(string memory key) public pure returns (uint256) {
+    function dbDelete(
+        uint256 chainId, address contractAddr,
+        string memory key) public pure returns (uint256) {
+
         uint256 keyOffset;
         uint256 keyLen;
         uint256 res;
@@ -46,13 +54,16 @@ contract PocTest {
         assembly {
             keyOffset := add(key, 0x20)
             keyLen := mload(key)
-            res := dbdelete(keyOffset, keyLen)
+            res := dbdelete(chainId, contractAddr, keyOffset, keyLen)
         }
 
         return res;
     }
 
-    function dbUpdate(string memory key, string memory value) public pure returns (uint256) {
+    function dbUpdate(
+        uint256 chainId, address contractAddr,
+        string memory key, string memory value) public pure returns (uint256) {
+
         uint256 keyOffset;
         uint256 keyLen;
         uint256 valOffset;
@@ -64,7 +75,7 @@ contract PocTest {
             keyLen := mload(key)
             valOffset := add(value, 0x20)
             valLen := mload(value)
-            res := dbupdate(keyOffset, keyLen, valOffset, valLen)
+            res := dbupdate(chainId, contractAddr, keyOffset, keyLen, valOffset, valLen)
         }
 
         return res;
@@ -84,16 +95,22 @@ contract PocTest {
     }
 
 
-    function test_db_create(string memory key, string memory value) public pure returns (uint256) {
-        return dbCreate(key, value);
+    function test_db_create(
+        uint256 chainId, address contractAddr,
+        string memory key, string memory value) public pure returns (uint256) {
+        return dbCreate(chainId, contractAddr, key, value);
     }
-    function test_db_query(string memory key) public pure returns (string memory) {
-        return dbQuery(key);
+    function test_db_query(uint256 chainId, address contractAddr,
+        string memory key) public pure returns (string memory) {
+        return dbQuery(chainId, contractAddr, key);
     }
-    function test_db_delete(string memory key) public pure returns (uint256) {
-        return dbDelete(key);
+    function test_db_delete(uint256 chainId, address contractAddr,
+        string memory key) public pure returns (uint256) {
+        return dbDelete(chainId, contractAddr, key);
     }
-    function test_db_update(string memory key, string memory value) public pure returns (uint256) {
-        return dbUpdate(key, value);
+    function test_db_update(
+        uint256 chainId, address contractAddr,
+        string memory key, string memory value) public pure returns (uint256) {
+        return dbUpdate(chainId, contractAddr, key, value);
     }
 }
