@@ -11,7 +11,7 @@ import (
 func main() {
 	http.HandleFunc("/soljson.js", func(w http.ResponseWriter, r *http.Request) {
 		// 获取要返回的文件路径
-		filePath := "soljson.js"
+		filePath := "soljson-v0.8.20+commit.c23852bc.js"
 
 		// 打开文件
 		file, err := os.Open(filePath)
