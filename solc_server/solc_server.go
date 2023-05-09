@@ -11,7 +11,7 @@ import (
 func main() {
 	http.HandleFunc("/soljson.js", func(w http.ResponseWriter, r *http.Request) {
 		// 获取要返回的文件路径
-		filePath := "soljson-v0.8.20+commit.c23852bc.js"
+		filePath := "soljson.js"
 
 		// 打开文件
 		file, err := os.Open(filePath)
@@ -31,10 +31,12 @@ func main() {
 			http.Error(w, fmt.Sprintf("failed to write file to response: %s", err), http.StatusInternalServerError)
 			return
 		}
-	})
 
+	})
+	port := 23333
+	fmt.Printf("start server on port %v\n", port)
 	// 启动 HTTP 服务
-	if err := http.ListenAndServe(":50000", nil); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(":%v", port), nil); err != nil {
 		panic(fmt.Sprintf("failed to start HTTP server: %s", err))
 	}
 }

@@ -48,7 +48,7 @@ func get(key string) (string, error) {
 	return result["value"], nil
 }
 
-func delete(key string) error {
+func deleteData(key string) error {
 	req, err := http.NewRequest("DELETE", fmt.Sprintf("http://localhost:50021/delete/%s", key), nil)
 	if err != nil {
 		return err
@@ -85,7 +85,7 @@ func main() {
 	fmt.Printf("Got value: %s\n", readValue)
 
 	//// Delete
-	//err = delete(key)
+	//err = deleteData(key)
 	//if err != nil {
 	//	log.Fatalf("Error in delete: %v", err)
 	//}
