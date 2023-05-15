@@ -2,7 +2,7 @@
   "name": "solc_server",
   "version": "1.0.0",
   "description": "",
-  "main": "soljson.js",
+  "main": "soljson-v0.8.20+commit.74aecafa.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
