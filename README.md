@@ -2,8 +2,6 @@
 
 ## 1. Compile op-geth
 
-execute the following commands in sequence will generate geth in the op-geth directory:
-
 ```bash
 git clone git@github.com:TopiaNetwork/op-geth.git
 cd op-geth
@@ -18,7 +16,7 @@ https://github.com/TopiaNetwork/topia-bin
 
 In Remix, you can specify a custom compiler，URL is `https://binaries.topia.network/poc/soljson-latest.js` .
 
-### custom compile
+### custom compile (optional)
 If you want to compile it yourself, you can execute the following command：
 ```bash
 git clone git@github.com:TopiaNetwork/solidity.git
@@ -27,16 +25,15 @@ cd solidity
 ```
 It will generate `soljson.js` in the Solidity directory.
 
-To use soljson.js in Remix, you need to start an HTTP server locally. Here is the code:
+To use this `soljson.js` in Remix, you need to start an HTTP server locally. Here is the code:
 ```python
 from flask import Flask, send_file
 
 app = Flask(__name__)
 
-
 @app.route('/soljson.js')
 def get_file():
-    return send_file('soljson_1.js', mimetype='application/javascript')
+    return send_file('soljson.js', mimetype='application/javascript')
 
 
 if __name__ == '__main__':
@@ -55,175 +52,35 @@ To configure a custom compiler URL in Remix, use `http://127.0.0.1:5000/soljson.
 
 ## 3. use POC in remix
 
-### new workspace and add contracts
+### create new workspace and add contracts
 
-open Remix in the Chrome browser using the following URL：https://remix.ethereum.org/ .
+1. open Remix in the Chrome browser using the following URL：https://remix.ethereum.org/ .
 
-Create a new workspace named `POC`.
+2. Create a new workspace named `POC`.
 
-Delete the existing contracts and create three new contracts with the following file names:
-`Topia.sol`、`TopiaDB_Layer2_A.sol` and `TopiaDB_Layer2_B.sol`。
+3. Delete the existing contracts.
 
-`Topia.sol`：
-```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+4. create three new contracts with the following file names:
+[`Topia.sol`](https://github.com/TopiaNetwork/poc/blob/main/contracts/Topia.sol)、
+[`TopiaDB_Layer2_A.sol`](https://github.com/TopiaNetwork/poc/blob/main/contracts/TopiaDB_Layer2_A.sol) and 
+[`TopiaDB_Layer2_B.sol`](https://github.com/TopiaNetwork/poc/blob/main/contracts/TopiaDB_Layer2_B.sol) .
 
-library TopiaDBLib {
-    function dbCreate(string memory key, string memory value) internal returns (uint256) {
-
-        uint256 keyOffset;
-        uint256 keyLen;
-        uint256 valOffset;
-        uint256 valLen;
-        uint256 res;
-
-        assembly {
-            keyOffset := add(key, 0x20)
-            keyLen := mload(key)
-            valOffset := add(value, 0x20)
-            valLen := mload(value)
-            res := dbput(keyOffset, keyLen, valOffset, valLen)
-        }
-
-        return res;
-    }
-
-    function dbQuery(uint256 chainId, address contractAddr,
-        string memory key) internal pure returns (string memory) {
-
-        uint256 keyOffset;
-        uint256 keyLen;
-        uint256 resOffset;
-        uint256 resLength;
-        uint256 memOffset;
-        uint256 valLen;
-
-        assembly {
-            keyOffset := add(key, 0x20)
-            keyLen := mload(key)
-            memOffset := mload(0x40)
-            valLen := dbvallen(chainId, contractAddr, keyOffset, keyLen)
-            resOffset, resLength := dbquery(chainId, contractAddr, keyOffset, keyLen, memOffset, valLen)
-            mstore(0x40, add(memOffset, resLength))
-        }
-
-        return getStringFromMemory(resOffset, resLength);
-    }
-
-    function dbDelete(string memory key) internal returns (uint256) {
-
-        uint256 keyOffset;
-        uint256 keyLen;
-        uint256 res;
-
-        assembly {
-            keyOffset := add(key, 0x20)
-            keyLen := mload(key)
-            res := dbdelete(keyOffset, keyLen)
-        }
-
-        return res;
-    }
-
-    function dbUpdate(string memory key, string memory value) internal returns (uint256) {
-
-        uint256 keyOffset;
-        uint256 keyLen;
-        uint256 valOffset;
-        uint256 valLen;
-        uint256 res;
-
-        assembly {
-            keyOffset := add(key, 0x20)
-            keyLen := mload(key)
-            valOffset := add(value, 0x20)
-            valLen := mload(value)
-            res := dbupdate(keyOffset, keyLen, valOffset, valLen)
-        }
-
-        return res;
-    }
-
-    function getStringFromMemory(uint256 offset, uint256 length) private pure returns (string memory) {
-        bytes memory valueBytes = new bytes(length);
-        for (uint256 i = 0; i < length; i++) {
-            bytes1 b;
-            assembly {
-                b := mload(add(offset, i))
-            }
-            valueBytes[i] = b;
-        }
-
-        return string(valueBytes);
-    }
-}
-```
-
-`TopiaDB_Layer2_A.sol`：
-```solidity
-
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
-
-import "./Topia.sol";
-
-contract TopiaDB_Layer2_A {
-
-    function topia_create(string memory key, string memory value) public returns (uint256) {
-        return TopiaDBLib.dbCreate(key, value);
-    }
-    function topia_query(
-        uint256 chainId, address contractAddr,
-        string memory key) public pure returns (string memory) {
-        return TopiaDBLib.dbQuery(chainId, contractAddr, key);
-    }
-    function topia_delete(string memory key) public returns (uint256) {
-        return TopiaDBLib.dbDelete(key);
-    }
-    function topia_update(string memory key, string memory value) public returns (uint256) {
-        return TopiaDBLib.dbUpdate(key, value);
-    }
-}
-```
-
-`TopiaDB_Layer2_B.sol`：
-
-```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
-
-import "./Topia.sol";
-
-contract TopiaDB_Layer2_B {
-
-    function topia_create(string memory key, string memory value) public returns (uint256) {
-        return TopiaDBLib.dbCreate(key, value);
-    }
-    function topia_query(
-        uint256 chainId, address contractAddr,
-        string memory key) public pure returns (string memory) {
-        return TopiaDBLib.dbQuery(chainId, contractAddr, key);
-    }
-    function topia_delete(string memory key) public returns (uint256) {
-        return TopiaDBLib.dbDelete(key);
-    }
-    function topia_update(string memory key, string memory value) public returns (uint256) {
-        return TopiaDBLib.dbUpdate(key, value);
-    }
-}
-```
-
-Open two Remix pages and switch both of them to the `POC` workspace.
+5. Open two Remix pages and switch both of them to the `POC` workspace.
 
 ### compile contracts
 
-Switch to the compilation page in Remix, referring to step 2 to configure the custom compiler URL. Then click the 
-compile button to compile the contracts. Both Remix pages need to compile, with one Remix compiling `TopiaDB_Layer2_A.sol` and the other Remix compiling `TopiaDB_Layer2_B.sol` .
+1. Switch to the compilation page in Remix, 
+2. referring to step 2 to configure the custom compiler URL. 
+3. click the compile button to compile the contracts. Both Remix pages need to compile, with one Remix compiling 
+`TopiaDB_Layer2_A.sol` and the other Remix compiling `TopiaDB_Layer2_B.sol` .
 
 ### deploy contracts
 
-During the deployment phase, the two Remix pages will differ. In this step, you will use the geth compiled in step 1. At this point, you need to start two local geth instances, with one having a chain ID of 123 and the other with a chain ID of 456.
+In this step, you will use the geth compiled in step 1, and you need to start two local geth instances, with one having 
+a chain ID of 123 and the other with a chain ID of 456.
+
+For the upcoming steps, it is recommended to have one Remix page deploying contracts on Chain 123 and another Remix page 
+deploying contracts on Chain 456.
 
 You can refer to the following commands for the operation:
 
@@ -258,7 +115,7 @@ template (remember to replace the `<>` placeholders with the appropriate values)
 }
 ```
 
-To execute the following command in the `op-geth/chain1` directory:
+execute the following command in the `op-geth/chain1` directory:
 ```bash
 ./geth --datadir node init chain1.json
 
@@ -277,9 +134,9 @@ To execute the following command in the `op-geth/chain1` directory:
         --mine console
 ```
 
-At this point, you have started the chain with a chain ID of 123. You can now start mining by executing the command `miner.start(2)`.
+now you have started the chain with a chain ID of 123, then you can start mining by executing the command `miner.start(2)`.
 
-Similarly, to create the initial block configuration chain2.json in the `op-geth/chain2` directory, please use the following 
+Similarly, create the genesis block configuration chain2.json in the `op-geth/chain2` directory, please use the following 
 template (remember to replace the `<>` placeholders with the appropriate values):
 
 ```json
@@ -305,7 +162,7 @@ template (remember to replace the `<>` placeholders with the appropriate values)
 }
 ```
 
-To execute the following command in the `op-geth/chain2` directory:
+execute the following command in the `op-geth/chain2` directory:
 
 ```bash
 ./geth --datadir node init chain2.json
@@ -326,12 +183,12 @@ To execute the following command in the `op-geth/chain2` directory:
         --mine console
 ```
 
-At this point, you have started the chain with a chain ID of 456. You can now start mining by executing the command `miner.start(2)`.
+now you have started the chain with a chain ID of 456, then you can start mining by executing the command `miner.start(2)`.
 
-To enable Remix to connect to these two chains, you need to configure the MetaMask wallet by adding two network configurations 
-using the "Add Network" button.
+you need to configure the MetaMask wallet by adding two network configurations using the "Add Network" button.
 
 The configuration for Chain 123 is as follows:
+
 ```
 Network name： Topia_L2_A
 RPC URL: http://localhost:8545
@@ -340,6 +197,7 @@ Currency symbol: ETH
 ```
 
 The configuration for Chain 456 is as follows:
+
 ```
 Network name： Topia_L2_B
 RPC URL: http://localhost:8546
@@ -349,8 +207,6 @@ Currency symbol: ETH
 
 Once MetaMask is configured, select "Injected Provider - MetaMask" as the deployment environment on the Remix Deploy page. 
 This will establish a connection between Remix and the locally configured geth instance.
-
-For the upcoming steps, it is recommended to have one Remix page deploying contracts on Chain 123 and another Remix page deploying contracts on Chain 456.
 
 With these steps completed, your POC environment is now set up and ready to use.
 
